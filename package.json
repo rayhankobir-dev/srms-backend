@@ -4,9 +4,9 @@
   "main": "index.js",
   "license": "MIT",
   "scripts": {
-    "start": "npm run seed && src/server.js",
+    "start": "node src/server.js",
     "dev": "nodemon src/server.js",
-    "seed": "node src/utils/scripts/index.js"
+    "seed": "node src/seed/index.js"
   },
   "dependencies": {
     "bcryptjs": "^3.0.2",
