@@ -1,5 +1,6 @@
 const User = require("../models/user.model.js");
 const mongoose = require("mongoose");
+const bcrypt = require("bcryptjs");
 require("dotenv").config();
 
 const createUser = async (user) => {
@@ -7,7 +8,12 @@ const createUser = async (user) => {
         await mongoose.connect(process.env.MONGO_URI || "");
         const isAdminUserExist = await User.findOne({ email: user.email });
         if (isAdminUserExist) throw new Error("User already exist");
-        await User.create(user);
+        
+        const hashedPassword = await bcrypt.hash(user.password,10);
+        await User.create({
+            ...user,
+            password: hashedPassword
+        });
         console.log("User created successfully");
         console.log("Credentials: ", user.email, user.password);
         process.exit(0);
