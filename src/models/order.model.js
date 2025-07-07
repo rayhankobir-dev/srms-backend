@@ -38,6 +38,7 @@ const orderSchema = new mongoose.Schema(
         itemName: { type: String, required: true },
         quantity: { type: Number, required: true },
         unitPrice: { type: Number, required: true },
+        inventoryImpact: { type: Number, required: true },
       },
     ],
     createdBy: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
