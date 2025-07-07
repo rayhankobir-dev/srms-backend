@@ -108,7 +108,12 @@ const loginUser = async (req, res) => {
 };
 
 const logoutUser = async (req, res) => {
-  res.clearCookie("token");
+  res.clearCookie("token", {
+    httpOnly: true,
+    secure: process.env.ENVIRONMENT === "production",
+    sameSite: process.env.ENVIRONMENT === "production" ? "none" : "lax",
+    path: "/",
+  });
   return res.json({ message: "Logged out successfully" });
 };
 
