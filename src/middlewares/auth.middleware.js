@@ -1,20 +1,28 @@
 const jwt = require("jsonwebtoken");
+const UserService = require("../services/user.service");
 
-const auth = (req, res, next) => {
-  const authHeader = req.headers.authorization;
-
-  if (!authHeader || !authHeader.startsWith("Bearer ")) {
-    return res.status(401).json({ message: "Missing authorization token" });
+const auth = async (req, res, next) => {
+  let token = null;
+  if (req.headers?.authorization?.startsWith("Bearer ")) {
+    token = req.headers.authorization.split(" ")[1];
+  }
+  if (req.cookies?.token) {
+    token = req.cookies.token;
   }
 
-  const token = authHeader.split(" ")[1];
+  if (!token) {
+    return res.status(401).json({ message: "Authentication required" });
+  }
 
   try {
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    req.user = decoded.user;
+    const user = await UserService.getUserById(decoded.user._id);
+    if (!user) throw new Error("User not found");
+    req.user = user;
     next();
   } catch (err) {
-    return res.status(401).json({ message: "Invalid authorization token" });
+    res.clearCookie("token");
+    return res.status(401).json({ message: "Invalid authentication token" });
   }
 };
 

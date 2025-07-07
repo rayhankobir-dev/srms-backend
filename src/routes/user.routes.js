@@ -1,26 +1,24 @@
 const { Router } = require("express");
-const {
-  getUsers,
-  registerUser,
-  updateUser,
-  deleteUser,
-  bulkDeleteUsers,
-  loginUser,
-  forgetPassword,
-  resetPassword,
-} = require("../controllers/user.controller");
 const auth = require("../middlewares/auth.middleware");
 const authorize = require("../middlewares/authorize.middlware");
+const UserController = require("../controllers/user.controller");
 
 const router = Router();
 
-router.get("/", getUsers);
-router.post("/login", loginUser);
-router.post("/", registerUser);
-router.put("/:id", updateUser);
-router.delete("/:id", deleteUser);
-router.delete("/bulk-delete", bulkDeleteUsers);
-router.post("/forget-password", forgetPassword);
-router.post("/reset-password", resetPassword);
+router.get("/", auth, authorize(["ADMIN", "MANAGER"]), UserController.getUsers);
+router.post("/", auth, authorize(["ADMIN"]), UserController.registerUser);
+router.put("/:id", auth, UserController.updateUser);
+router.get("/profile", auth, UserController.getProfile);
+router.post("/login", UserController.loginUser);
+router.delete("/logout", auth, UserController.logoutUser);
+router.delete("/:id", auth, authorize(["ADMIN"]), UserController.deleteUser);
+router.delete(
+  "/bulk-delete",
+  authorize(["ADMIN"]),
+  UserController.bulkDeleteUsers
+);
+router.post("/forget-password", UserController.forgetPassword);
+router.post("/reset-password", UserController.resetPassword);
+router.post("/change-password", auth, UserController.changePassword);
 
 module.exports = router;

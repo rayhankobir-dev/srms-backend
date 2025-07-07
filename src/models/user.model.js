@@ -12,6 +12,12 @@ const userSchema = new mongoose.Schema(
       required: true,
       unique: true,
     },
+    gender: {
+      type: String,
+      required: true,
+      enum: ["MALE", "FEMALE", "OTHER"],
+      default: "MALE",
+    },
     password: {
       type: String,
       required: true,
@@ -19,14 +25,10 @@ const userSchema = new mongoose.Schema(
     role: {
       type: String,
       required: true,
-      enum: ["ADMIN", "MANAGER", "STUFF"],
-      default: "STUFF",
+      enum: ["ADMIN", "MANAGER", "STAFF"],
+      default: "STAFF",
     },
-    phone: {
-      type: String,
-      required: true,
-      unique: true,
-    },
+    phone: { type: String },
     address: {
       type: String,
       required: true,

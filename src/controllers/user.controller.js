@@ -1,38 +1,45 @@
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
-const User = require("../models/user.model.js");
 const { sendEmail } = require("../utils/lib.js");
+const UserService = require("../services/user.service");
 const resetPasswordEmail = require("../utils/templates/reset-password.template.js");
 
 const getUsers = async (req, res) => {
   try {
-    const users = await User.find().select("-password");
+    const users = await UserService.getAllUsers();
     return res.json(users);
   } catch (error) {
     return res.status(400).json({ error: error.message });
   }
 };
 
-const getUserByIdOrEmail = async (req, res) => {
+const getUserById = async (req, res) => {
   try {
-    const user = await User.findOne({
-      $or: [{ email: req.params.id }, { _id: req.params.id }],
-    }).select("-password");
-    if (!user) return res.status(404).json({ message: "User not found" });
+    const user = await UserService.getUserById(req.params.id);
     return res.json(user);
   } catch (error) {
     return res.status(400).json({ error: error.message });
   }
 };
 
+const getProfile = async (req, res) => {
+  try {
+    const user = await UserService.getUserById(req.user._id);
+    res.status(200).json(user);
+  } catch (error) {
+    res.status(400).json({ error: error.message });
+  }
+};
+
 const registerUser = async (req, res) => {
   try {
+    const data = req.body;
     const hashedPassword = await bcrypt.hash(
       req.body?.password || "Password@123",
       10
     );
-    const user = await User.create({ ...req.body, password: hashedPassword });
-    user.password = undefined;
+    data.password = hashedPassword;
+    const user = await UserService.createUser(data);
     return res.status(201).json(user);
   } catch (error) {
     return res.status(400).json({ error: error.message });
@@ -41,9 +48,7 @@ const registerUser = async (req, res) => {
 
 const updateUser = async (req, res) => {
   try {
-    const user = await User.findByIdAndUpdate(req.params.id, req.body, {
-      new: true,
-    }).select("-password");
+    const user = await UserService.updateUser(req.params.id, req.body);
     if (!user) return res.status(404).json({ message: "User not found" });
     return res.json(user);
   } catch (error) {
@@ -53,11 +58,9 @@ const updateUser = async (req, res) => {
 
 const deleteUser = async (req, res) => {
   try {
-    const user = await User.findByIdAndDelete(req.params.id).select(
-      "-password"
-    );
+    const user = await UserService.deleteUser(req.params.id);
     if (!user) return res.status(404).json({ message: "User not found" });
-    return res.json({ message: "User deleted successfully" });
+    return res.json({ message: "User deleted successfully", user });
   } catch (error) {
     return res.status(400).json({ error: error.message });
   }
@@ -65,12 +68,11 @@ const deleteUser = async (req, res) => {
 
 const bulkDeleteUsers = async (req, res) => {
   try {
-    const { ids } = req.body;
-    if (!Array.isArray(ids)) {
+    if (!Array.isArray(req.body.ids)) {
       return res.status(400).json({ message: "ids must be an array" });
     }
 
-    const result = await User.deleteMany({ _id: { $in: ids } });
+    const result = await UserService.bulkDeleteUsers(ids);
     return res.json({
       message: `Selected ${result.deletedCount} users deleted successfully`,
     });
@@ -81,7 +83,7 @@ const bulkDeleteUsers = async (req, res) => {
 
 const loginUser = async (req, res) => {
   try {
-    const user = await User.findOne({ email: req.body.email });
+    const user = await UserService.getUserByEmail(req.body.email);
     if (!user) return res.status(400).json({ message: "Invalid credentials" });
     if (!(await bcrypt.compare(req.body.password, user.password)))
       return res.status(401).json({ message: "Incorrect password or email" });
@@ -91,15 +93,28 @@ const loginUser = async (req, res) => {
       expiresIn: process.env.JWT_EXPIRES_IN,
     });
 
-    return res.json({ user, token });
+    return res
+      .cookie("token", token, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === "production",
+        sameSite: "lax",
+        maxAge: 7 * 24 * 60 * 60 * 1000,
+      })
+      .json({ user, token });
   } catch (error) {
+    console.log(error.message);
     return res.status(400).json({ error: error.message });
   }
 };
 
+const logoutUser = async (req, res) => {
+  res.clearCookie("token");
+  return res.json({ message: "Logged out successfully" });
+};
+
 const forgetPassword = async (req, res) => {
   try {
-    const user = await User.findOne({ email: req.body.email });
+    const user = await UserService.getUserByEmail(req.body.email);
     if (!user) return res.status(400).json({ message: "User not found" });
 
     const token = jwt.sign({ user }, process.env.JWT_SECRET, {
@@ -143,14 +158,35 @@ const resetPassword = async (req, res) => {
     return res.status(400).json({ error: error.message });
   }
 };
+
+const changePassword = async (req, res) => {
+  try {
+    const { currentPassword, newPassword } = req.body;
+    const user = await UserService.getUserByEmail(req.user.email);
+    const isMatched = await bcrypt.compare(currentPassword, user.password);
+    if (!isMatched) {
+      return res.status(400).json({ message: "Incorrect password" });
+    }
+    const hashedPassword = await bcrypt.hash(newPassword, 10);
+    user.password = hashedPassword;
+    await user.save();
+    return res.json({ message: "Password updated successfully" });
+  } catch (error) {
+    return res.status(400).json({ error: error.message });
+  }
+};
+
 module.exports = {
   getUsers,
-  getUserByIdOrEmail,
+  getUserById,
+  getProfile,
   loginUser,
+  logoutUser,
   registerUser,
   updateUser,
   deleteUser,
   bulkDeleteUsers,
   forgetPassword,
   resetPassword,
+  changePassword,
 };
