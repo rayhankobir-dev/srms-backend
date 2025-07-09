@@ -4,7 +4,11 @@ const settingsSchema = new mongoose.Schema(
   {
     tableCount: { type: Number, default: 10 },
     taxPercentage: { type: Number, default: 10 },
-    currency: { type: String, default: "BDT" },
+    currency: {
+      code: { type: String, default: "DBT" },
+      name: { type: String, default: "Bangladeshi Taka" },
+      sign: { type: String, default: "৳" },
+    },
     inventoryInsufficencyAt: { type: Number, default: 10 },
     updatedBy: {
       type: mongoose.Schema.Types.ObjectId,

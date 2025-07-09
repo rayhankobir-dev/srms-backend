@@ -35,10 +35,10 @@ const updateStock = async (id, data, userId) => {
   return updated;
 };
 
-const deleteStock = async (id) => {
-  const deleted = await Stocks.findByIdAndDelete(id);
-  if (!deleted) throw new Error("Stock not found for deletion");
-  return deleted;
+const deleteStocks = async (ids) => {
+  const result = await Stocks.deleteMany({ _id: { $in: ids } });
+  if (!result) throw new Error("Stock not found for deletion");
+  return result;
 };
 
 module.exports = {
@@ -46,5 +46,5 @@ module.exports = {
   getStockById,
   createStock,
   updateStock,
-  deleteStock,
+  deleteStocks,
 };

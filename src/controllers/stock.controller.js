@@ -42,8 +42,14 @@ const updateStock = async (req, res) => {
 
 const deleteStock = async (req, res) => {
   try {
-    await StockService.deleteStock(req.params.id);
-    res.status(204).send();
+    const ids = req.body?.ids;
+    if (!ids) {
+      return res.status(400).json({ message: "Stock ids is required" });
+    }
+    const result = await StockService.deleteStocks(ids);
+    res.status(204).json({
+      message: `Selected (${result.deletedCount}) stock items deleted!`,
+    });
   } catch (err) {
     res.status(404).json({ message: err.message });
   }

@@ -35,10 +35,10 @@ const updateInventory = async (id, data, userId) => {
   return updated;
 };
 
-const deleteInventory = async (id) => {
-  const deleted = await Inventory.findByIdAndDelete(id);
-  if (!deleted) throw new Error("Inventory item not found for deletion");
-  return deleted;
+const deleteInventory = async (ids) => {
+  const result = await Inventory.deleteMany({ _id: { $in: ids } });
+  if (!result) throw new Error("Inventory item not found for deletion");
+  return result;
 };
 
 module.exports = {

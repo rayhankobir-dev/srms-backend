@@ -8,6 +8,6 @@ router.get("/", auth, InventoryController.getAllInventory);
 router.get("/:id", auth, InventoryController.getInventoryById);
 router.post("/", auth, InventoryController.createInventory);
 router.put("/:id", auth, InventoryController.updateInventory);
-router.delete("/:id", auth, InventoryController.deleteInventory);
+router.delete("/", auth, InventoryController.deleteInventory);
 
 module.exports = router;

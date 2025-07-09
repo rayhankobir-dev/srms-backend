@@ -29,7 +29,7 @@ const orderSchema = new mongoose.Schema(
     },
     paymentStatus: {
       type: String,
-      enum: ["PAID", "UNPAID"],
+      enum: ["PAID", "UNPAID", "PARTIAL"],
       default: "UNPAID",
     },
     items: [
@@ -37,6 +37,7 @@ const orderSchema = new mongoose.Schema(
         menuId: { type: mongoose.Schema.Types.ObjectId, ref: "Menu" },
         itemName: { type: String, required: true },
         quantity: { type: Number, required: true },
+        unit: { type: String, required: true },
         unitPrice: { type: Number, required: true },
         inventoryImpact: { type: Number, required: true },
       },

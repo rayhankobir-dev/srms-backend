@@ -42,12 +42,14 @@ const updateInventory = async (req, res) => {
 
 const deleteInventory = async (req, res) => {
   try {
-    const id = req.params?.id;
-    if (!id) {
-      return res.status(400).json({ message: "Inventory id is required" });
+    const ids = req.body?.ids;
+    if (!ids) {
+      return res.status(400).json({ message: "Inventory ids is required" });
     }
-    await InventoryService.deleteInventory(req.params.id);
-    res.status(204).send();
+    const result = await InventoryService.deleteInventory(ids);
+    res.status(200).json({
+      message: `Selected (${result.deletedCount}) inventory items deleted!`,
+    });
   } catch (err) {
     res.status(404).json({ message: err.message });
   }
