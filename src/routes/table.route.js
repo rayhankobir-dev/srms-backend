@@ -6,6 +6,7 @@ const router = express.Router();
 
 router.get("/", auth, TableController.getAllTables);
 router.get("/:id", auth, TableController.getTableById);
+router.get("/:id/orders", auth, TableController.getTableOrders);
 router.post("/", auth, TableController.createTable);
 router.put("/:id", auth, TableController.updateTable);
 router.delete("/:id", auth, TableController.deleteTable);

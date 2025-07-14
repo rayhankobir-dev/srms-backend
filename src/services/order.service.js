@@ -1,10 +1,29 @@
 const Order = require("../models/order.model");
 
 const getAllOrders = async () => {
-  return await Order.find()
-    .populate("tableId", "status")
-    .populate("createdBy", "firstName lastName email")
-    .populate("items.menuId", "itemName meal");
+  const orders = await Order.find()
+    .populate("table", "name status")
+    .populate("items.menu", "itemName thumbnail meal");
+  return orders;
+};
+
+const getOrdersByTable = async (filter = {}, options = {}) => {
+  const { sort, limit, skip, select, populate } = options;
+  delete filter.page;
+  delete filter.limit;
+  let query = Order.find(filter);
+
+  if (sort)
+    query = query.sort({
+      ...sort,
+      updatedAt: -1,
+    });
+  if (limit) query = query.limit(limit);
+  if (skip) query = query.skip(skip);
+  if (select) query = query.select(select);
+  if (populate) query = query.populate(populate);
+
+  return await query;
 };
 
 const getOrderById = async (id) => {
@@ -17,11 +36,16 @@ const getOrderById = async (id) => {
 };
 
 const createOrder = async (data, userId) => {
-  const order = new Order({
+  const order = await Order.create({
     ...data,
     createdBy: userId,
   });
-  return await order.save();
+
+  const populatedOrder = await Order.findById(order._id)
+    .populate("table", "name status assignedStaff")
+    .populate("items.menu", "itemName meal thumbnail");
+
+  return populatedOrder;
 };
 
 const updateOrder = async (id, data) => {
@@ -42,4 +66,5 @@ module.exports = {
   createOrder,
   updateOrder,
   deleteOrder,
+  getOrdersByTable,
 };

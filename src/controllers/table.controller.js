@@ -1,4 +1,5 @@
 const TableService = require("../services/table.service");
+const OrderService = require("../services/order.service");
 
 const getAllTables = async (req, res) => {
   try {
@@ -49,10 +50,22 @@ const deleteTable = async (req, res) => {
   }
 };
 
+const getTableOrders = async (req, res) => {
+  try {
+    const orders = await OrderService.getOrdersByTable({
+      table: req.params.id,
+    });
+    res.status(200).json(orders);
+  } catch (err) {
+    res.status(404).json({ message: err.message });
+  }
+};
+
 module.exports = {
   getAllTables,
   getTableById,
   createTable,
   updateTable,
   deleteTable,
+  getTableOrders,
 };

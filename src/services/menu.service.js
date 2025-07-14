@@ -1,7 +1,7 @@
 const Menu = require("../models/menu.model");
 
-const getAllMenus = async () => {
-  return await Menu.find()
+const getAllMenus = async (filter={}) => {
+  return await Menu.find(filter)
     .populate("linkedInventory", "itemName inStock unit")
     .populate("createdBy updatedBy", "firstName lastName email");
 };

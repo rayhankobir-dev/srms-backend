@@ -2,7 +2,7 @@ const MenuService = require("../services/menu.service");
 
 const getAllMenus = async (req, res) => {
   try {
-    const menus = await MenuService.getAllMenus();
+    const menus = await MenuService.getAllMenus({...req.query});
     res.status(200).json(menus);
   } catch (err) {
     res.status(500).json({ message: err.message });

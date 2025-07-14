@@ -1,4 +1,5 @@
 const OrderService = require("../services/order.service");
+const TableService = require("../services/table.service");
 
 const getAllOrders = async (req, res) => {
   try {
@@ -20,7 +21,9 @@ const getOrderById = async (req, res) => {
 
 const createOrder = async (req, res) => {
   try {
+    const { table } = req.body;
     const order = await OrderService.createOrder(req.body, req.user._id);
+    await TableService.updateTable(table, { status: "RESERVED" }, req.user._id);
     res.status(201).json(order);
   } catch (err) {
     res.status(400).json({ message: err.message });
