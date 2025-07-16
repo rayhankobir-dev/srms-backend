@@ -59,9 +59,13 @@ orderSchema.post("save", async function (doc, next) {
 
       const totalImpact = item.quantity * item.inventoryImpact;
 
-      await Inventory.findByIdAndUpdate(menu.linkedInventory, {
-        $inc: { inStock: -totalImpact, sold: totalImpact },
-      });
+      const inventory = await Inventory.findById(menu.linkedInventory);
+      if (!inventory) continue;
+
+      const remain = inventory.cooked - totalImpact;
+      inventory.cooked = remain > 0 ? remain : 0;
+      inventory.sold += totalImpact;
+      await inventory.save();
     }
 
     next();

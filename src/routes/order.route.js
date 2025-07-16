@@ -9,5 +9,6 @@ router.get("/:id", auth, OrderController.getOrderById);
 router.post("/", auth, OrderController.createOrder);
 router.put("/:id", auth, OrderController.updateOrder);
 router.delete("/:id", auth, OrderController.deleteOrder);
+router.delete("/bulk-delete", auth, OrderController.bulkDeleteOrders);
 
 module.exports = router;

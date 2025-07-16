@@ -22,7 +22,10 @@ const createInventory = async (data, userId) => {
     createdBy: userId,
     updatedBy: userId,
   });
-  return await inventory.save();
+  await inventory.save();
+
+  const result = await getInventoryById(inventory._id);
+  return result;
 };
 
 const updateInventory = async (id, data, userId) => {
@@ -30,7 +33,7 @@ const updateInventory = async (id, data, userId) => {
     id,
     { ...data, updatedBy: userId },
     { new: true }
-  );
+  ).populate("createdBy updatedBy", "firstName lastName email");
   if (!updated) throw new Error("Inventory item not found for update");
   return updated;
 };

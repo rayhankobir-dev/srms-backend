@@ -48,10 +48,26 @@ const deleteOrder = async (req, res) => {
   }
 };
 
+const bulkDeleteOrders = async (req, res) => {
+  try {
+    const ids = req.body?.ids;
+    if (!ids) {
+      return res.status(400).json({ message: "Order ids is required" });
+    }
+    const result = await OrderService.deleteOrders(ids);
+    res.status(200).json({
+      message: `Selected (${result.deletedCount}) order items deleted!`,
+    });
+  } catch (err) {
+    res.status(404).json({ message: err.message });
+  }
+};
+
 module.exports = {
   getAllOrders,
   getOrderById,
   createOrder,
   updateOrder,
   deleteOrder,
+  bulkDeleteOrders,
 };

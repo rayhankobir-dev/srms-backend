@@ -60,6 +60,12 @@ const deleteOrder = async (id) => {
   return deleted;
 };
 
+const deleteOrders = async (ids) => {
+  const result = await Order.deleteMany({ _id: { $in: ids } });
+  if (!result) throw new Error("Order not found for deletion");
+  return result;
+};
+
 module.exports = {
   getAllOrders,
   getOrderById,
@@ -67,4 +73,5 @@ module.exports = {
   updateOrder,
   deleteOrder,
   getOrdersByTable,
+  deleteOrders,
 };

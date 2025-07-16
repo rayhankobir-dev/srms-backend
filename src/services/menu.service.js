@@ -1,9 +1,47 @@
 const Menu = require("../models/menu.model");
 
-const getAllMenus = async (filter={}) => {
+const getAllMenus = async (filter = {}) => {
+  const { meal, available } = filter;
+  if (available) {
+    return await getAvailableMenus(meal);
+  }
+
   return await Menu.find(filter)
     .populate("linkedInventory", "itemName inStock unit")
     .populate("createdBy updatedBy", "firstName lastName email");
+};
+
+const getAvailableMenus = async (meal) => {
+  try {
+    const menus = await Menu.find({
+      meal,
+      linkedInventory: { $ne: null },
+    }).populate("linkedInventory");
+
+    const filteredMenus = menus.filter((menu) => menu?.linkedInventory?.cooked);
+
+    const processedMenus = filteredMenus.map((menu) => {
+      const inventory = menu.linkedInventory;
+      const updatedPricing = menu.pricing.map((price) => {
+        const isDisabled = price.inventoryImpact > inventory.cooked;
+
+        return {
+          ...(price.toObject?.() ?? price),
+          disabled: isDisabled,
+        };
+      });
+
+      return {
+        ...(menu.toObject?.() ?? menu),
+        pricing: updatedPricing,
+      };
+    });
+
+    return processedMenus;
+  } catch (error) {
+    console.error("Failed to fetch available menus:", error);
+    return [];
+  }
 };
 
 const getMenuById = async (id) => {

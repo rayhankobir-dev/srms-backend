@@ -30,7 +30,7 @@ const updateStock = async (id, data, userId) => {
     id,
     { ...data, updatedBy: userId },
     { new: true }
-  );
+  ).populate("createdBy updatedBy", "firstName lastName email");
   if (!updated) throw new Error("Stock not found for update");
   return updated;
 };
