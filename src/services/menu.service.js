@@ -20,24 +20,7 @@ const getAvailableMenus = async (meal) => {
 
     const filteredMenus = menus.filter((menu) => menu?.linkedInventory?.cooked);
 
-    const processedMenus = filteredMenus.map((menu) => {
-      const inventory = menu.linkedInventory;
-      const updatedPricing = menu.pricing.map((price) => {
-        const isDisabled = price.inventoryImpact > inventory.cooked;
-
-        return {
-          ...(price.toObject?.() ?? price),
-          disabled: isDisabled,
-        };
-      });
-
-      return {
-        ...(menu.toObject?.() ?? menu),
-        pricing: updatedPricing,
-      };
-    });
-
-    return processedMenus;
+    return filteredMenus;
   } catch (error) {
     console.error("Failed to fetch available menus:", error);
     return [];
@@ -77,10 +60,16 @@ const deleteMenu = async (id) => {
   return deleted;
 };
 
+const bulkDeleteMenu = async (ids) => {
+  const deleted = await Menu.deleteMany({ _id: { $in: ids } });
+  return deleted;
+};
+
 module.exports = {
   getAllMenus,
   getMenuById,
   createMenu,
   updateMenu,
   deleteMenu,
+  bulkDeleteMenu,
 };

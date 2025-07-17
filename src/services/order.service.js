@@ -13,11 +13,10 @@ const getOrdersByTable = async (filter = {}, options = {}) => {
   delete filter.limit;
   let query = Order.find(filter);
 
-  if (sort)
-    query = query.sort({
-      ...sort,
-      updatedAt: -1,
-    });
+  query = query.sort({
+    ...sort,
+    createdAt: -1,
+  });
   if (limit) query = query.limit(limit);
   if (skip) query = query.skip(skip);
   if (select) query = query.select(select);

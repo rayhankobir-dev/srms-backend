@@ -41,8 +41,10 @@ const updateOrder = async (req, res) => {
 
 const deleteOrder = async (req, res) => {
   try {
-    await OrderService.deleteOrder(req.params.id);
-    res.status(204).send();
+    const deleted = await OrderService.deleteOrder(req.params.id);
+    res.status(200).json({
+      message: `Order ${deleted._id} deleted successfully`,
+    });
   } catch (err) {
     res.status(404).json({ message: err.message });
   }

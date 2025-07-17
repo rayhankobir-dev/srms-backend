@@ -49,10 +49,34 @@ const deleteMenu = async (req, res) => {
   }
 };
 
+const bulkDelete = async (req, res) => {
+  try {
+    const ids = req.body?.ids;
+
+    if (!Array.isArray(ids) || ids.length === 0) {
+      return res.status(400).json({ message: "Menu IDs must be a non-empty array" });
+    }
+
+    const result = await MenuService.bulkDeleteMenu(ids);
+
+    if (result.deletedCount === 0) {
+      return res.status(404).json({ message: "No menu items found for deletion" });
+    }
+
+    return res.status(200).json({
+      message: `Selected (${result.deletedCount}) menu items deleted!`,
+    });
+  } catch (err) {
+    console.error("Bulk Delete Error:", err);
+    return res.status(500).json({ message: err.message || "Server error" });
+  }
+};
+
 module.exports = {
   getAllMenus,
   getMenuById,
   createMenu,
   updateMenu,
   deleteMenu,
+  bulkDelete
 };
